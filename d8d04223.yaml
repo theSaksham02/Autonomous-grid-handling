@@ -1,0 +1,135 @@
+# Grid Configuration
+grid:
+  system: "ieee118"
+  buses: 118
+  branches: 186
+  generators: 54
+  base_mva: 100
+  voltage_levels: [138, 161, 230, 345]  # kV
+
+# Renewable Energy Integration
+renewables:
+  solar:
+    count: 35
+    total_capacity_mw: 1850
+    efficiency: 0.18
+    temp_coefficient: 0.004
+  wind:
+    count: 18
+    total_capacity_mw: 1240
+    cut_in_speed: 3.0  # m/s
+    rated_speed: 12.0
+    cut_out_speed: 25.0
+  battery:
+    count: 12
+    total_capacity_mwh: 500
+    efficiency: 0.92
+    charge_rate: 0.5  # C-rate
+    soc_min: 0.15
+    soc_max: 0.95
+
+# Weather Data
+weather:
+  api_key: "YOUR_OPENWEATHERMAP_API_KEY"  # Get from openweathermap.org
+  location:
+    lat: 39.8283
+    lon: -98.5795  # Midwestern US (approximate)
+  forecast_hours: 24
+  update_interval_minutes: 15
+  variables:
+    - temperature
+    - wind_speed
+    - wind_direction
+    - cloud_cover
+    - humidity
+    - pressure
+
+# Cascading Failure Simulation
+simulation:
+  n_scenarios: 1000
+  contingency_types:
+    line_outage: 0.55
+    generator_trip: 0.30
+    load_spike: 0.10
+    transformer_failure: 0.05
+  time_horizon_seconds: 600
+  time_step_seconds: 1.0
+  voltage_critical: 0.90  # p.u.
+  voltage_emergency: 0.85  # p.u.
+  line_loading_max: 1.0  # p.u.
+  frequency_min: 58.5  # Hz
+  frequency_max: 61.5  # Hz
+
+# DDPG Configuration
+ddpg:
+  state_dim: 247
+  action_dim: 7
+  actor:
+    hidden_layers: [512, 256, 128]
+    activation: "relu"
+    dropout: 0.2
+    learning_rate: 0.0001
+  critic:
+    hidden_layers: [512, 256, 128]
+    activation: "relu"
+    dropout: 0.2
+    learning_rate: 0.001
+  training:
+    episodes: 5000
+    timesteps_per_episode: 96
+    batch_size: 128
+    gamma: 0.99
+    tau: 0.001
+    buffer_size: 1000000
+    exploration_noise:
+      theta: 0.15
+      mu: 0.0
+      sigma: 0.2
+
+# Reward Function Weights
+reward:
+  lambda_cascade: 0.60
+  lambda_cost: 0.30
+  lambda_overshed: 0.10
+  costs:
+    load_shed: 5000  # $/MWh
+    battery_cycle: 150  # $/MWh
+    renewable_curtail: 45  # $/MWh
+    frequency_reg: 200  # $/MW
+  overshed_penalty: 1000
+
+# Training Configuration
+training:
+  split:
+    train: 0.70
+    validation: 0.15
+    test: 0.15
+  augmentation:
+    smote_samples: 200
+    noise_sigma: 0.05
+    time_shift_hours: 2
+    renewable_scaling: [0.90, 1.10]
+
+# Evaluation
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - roc_auc
+    - false_positive_rate
+  comparison_methods:
+    - ddpg
+    - opf
+    - rule_based
+    - feedforward_nn
+
+# Paths
+paths:
+  data_raw: "./data/raw/"
+  data_weather: "./data/weather/"
+  data_processed: "./data/processed/"
+  models: "./models/trained_weights/"
+  results: "./results/"
+  logs: "./logs/"
