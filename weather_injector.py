@@ -154,6 +154,3 @@ if __name__ == "__main__":
     print(f"Wind output range: {forecast['wind_output'].min():.2f} - {forecast['wind_output'].max():.2f} p.u.")
     print(f"\nFirst 3 periods:")
     print(forecast['weather_raw'].head(3))
-
-
-Explain

@@ -224,9 +224,6 @@ if __name__ == "__main__":
         violations = sim.check_violations()
         print(f"Violations: {violations}")
 
-        state = sim.get_grid_state()
-        print(f"State vector dimension: {len(state)}")
-        print(f"Voltage range: {state[:118].min():.3f} - {state[:118].max():.3f} p.u.")
-
-
-Explain
+    state = sim.get_grid_state()
+    print(f"State vector dimension: {len(state)}")
+    print(f"Voltage range: {state[:118].min():.3f} - {state[:118].max():.3f} p.u.")
