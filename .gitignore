@@ -1,0 +1,59 @@
+# Local development artifacts
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter & notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data files (large, don't commit)
+data/raw/**
+data/weather/**
+data/processed/**
+*.pkl
+*.pickle
+
+# Model weights (large, save to Drive/external)
+models/trained_weights/**
+!models/trained_weights/.gitkeep
+
+# Results (can pull from Colab)
+results/**
+*.png
+*.pdf
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+temp/
+
+# Keep config and scripts
+!config.yaml
+!requirements.txt
+!train_*.py
+!*.md

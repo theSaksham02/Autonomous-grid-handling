@@ -141,8 +141,8 @@ class GridSimulator:
         gen_q[:len(self.net.res_gen)] = self.net.res_gen.q_mvar.values
         state.extend(gen_q)
 
-        # Load active power (91)
-        load_p = np.zeros(91)
+        # Load active power (99 - IEEE 118-bus system has 99 loads)
+        load_p = np.zeros(99)
         load_p[:len(self.net.res_load)] = self.net.res_load.p_mw.values
         state.extend(load_p)
 

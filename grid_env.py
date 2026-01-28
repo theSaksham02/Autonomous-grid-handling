@@ -4,6 +4,7 @@ OpenAI Gym Environment for Grid Cascading Failure Mitigation
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
+import pandas as pd
 import yaml
 from typing import Dict
 from grid_simulator import GridSimulator
@@ -32,8 +33,8 @@ class GridEnv(gym.Env):
             dtype=np.float32
         )
 
-        # State space: 247-dimensional
-        # [voltages(118), angles(118), P_gen(54), Q_gen(54), P_load(91), weather(12), history(6), time(3)]
+        # State space: 462-dimensional
+        # [voltages(118), angles(118), P_gen(53), Q_gen(53), P_load(99), weather(12), history(6), time(3)]
         state_dim = self.config['ddpg']['state_dim']
         self.observation_space = spaces.Box(
             low=-np.inf,
@@ -172,6 +173,9 @@ class GridEnv(gym.Env):
 
         # Temporal features (3 dimensions)
         timestamp = self.weather_forecast['timestamps'][time_idx]
+        # Convert numpy datetime64 to pandas Timestamp if needed
+        if isinstance(timestamp, np.datetime64):
+            timestamp = pd.Timestamp(timestamp)
         temporal_state = np.array([
             timestamp.hour / 24.0,
             timestamp.dayofweek / 7.0,
@@ -186,8 +190,11 @@ class GridEnv(gym.Env):
             temporal_state   # 3
         ])
 
-        # Pad to 247 dimensions (take first 247 for now)
-        state = state[:247]
+        # Total: 415 + 12 + 6 + 3 = 436, pad to match state_dim in config
+        if len(state) < self.config['ddpg']['state_dim']:
+            state = np.pad(state, (0, self.config['ddpg']['state_dim'] - len(state)), 'constant')
+        else:
+            state = state[:self.config['ddpg']['state_dim']]
 
         # Normalize
         state = np.clip(state, -10, 10)  # Prevent extreme values

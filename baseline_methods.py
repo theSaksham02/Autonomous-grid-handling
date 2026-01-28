@@ -37,7 +37,7 @@ class RuleBasedBaseline:
 class FeedforwardNN:
     """Simple feedforward neural network"""
     
-    def __init__(self, input_dim=247):
+    def __init__(self, input_dim=462):
         self.model = MLPClassifier(
             hidden_layer_sizes=(512, 256, 128),
             activation='relu',
