@@ -1,0 +1,72 @@
+{
+  "Rule-based": {
+    "cascade_rate": 0.24,
+    "mean_load_shed": 0.10078678750000002,
+    "shed_reduction": 0.017426345858007078,
+    "cascades_prevented": 1,
+    "severity_dist": {
+      "0": 19,
+      "1": 2,
+      "2": 2,
+      "3": 2
+    },
+    "mean_time_ms": 157.41433143615723
+  },
+  "Supervised MLP": {
+    "method": "Supervised MLP",
+    "TP": 3,
+    "FP": 5,
+    "TN": 13,
+    "FN": 4,
+    "accuracy": 0.64,
+    "precision": 0.375,
+    "recall": 0.42857142857142855,
+    "f1": 0.4,
+    "auc": 0.5317460317460317,
+    "fpr": 0.2777777777777778,
+    "mean_time_ms": 0.5,
+    "note": "predictor_not_preventor"
+  },
+  "OPF": {
+    "cascade_rate": 0.24,
+    "cascades_prevented": 1,
+    "mean_time_ms": 329.4611644744873
+  },
+  "DDPG (ours)": {
+    "method": "DDPG (ours)",
+    "n_seeds": 2,
+    "cascade_rate_mean": 0.24,
+    "cascade_rate_std": 0.0,
+    "mean_load_shed_mean": 0.09008280681886105,
+    "mean_load_shed_std": 0.009456993694579661,
+    "shed_reduction_mean": 0.028130326539146037,
+    "shed_reduction_std": 0.009456993694579661,
+    "mean_time_ms_mean": 163.92257690429688,
+    "mean_time_ms_std": 12.34858512878418,
+    "cascades_prevented_mean": 1.0,
+    "cascades_prevented_std": 0.0
+  },
+  "DDPG (no PER)": {
+    "cascade_rate": 0.24,
+    "mean_load_shed": 0.09953980051344072,
+    "shed_reduction": 0.018673332844566376,
+    "cascades_prevented": 1,
+    "severity_dist": {
+      "0": 19,
+      "1": 2,
+      "2": 1,
+      "3": 3
+    },
+    "mean_time_ms": 193.9096164703369
+  },
+  "No Agent (baseline)": {
+    "cascade_rate": 0.28,
+    "mean_load_shed": 0.1182131333580071,
+    "severity_dist": {
+      "0": 18,
+      "1": 2,
+      "2": 2,
+      "3": 3
+    }
+  }
+}

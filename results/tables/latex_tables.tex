@@ -1,0 +1,75 @@
+\begin{table}[t]
+\centering
+\caption{Dataset Split and Cascade Distribution}
+\label{tab:dataset}
+\begin{tabular}{lccc}
+\toprule
+ & Train & Validation & Test \\
+\midrule
+Total scenarios & 700 & 150 & 150 \\
+Cascade ($\sigma > 0$) & 202 & 48 & 47 \\
+Non-cascade ($\sigma = 0$) & 498 & 102 & 103 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Cascade Prevention Performance on Test Set (25 scenarios)}
+\label{tab:results}
+\begin{tabular}{lccccc}
+\toprule
+Method & Cascade Rate & Load Shed & Shed $\downarrow$ & Prevented & Latency (ms) \\
+\midrule
+No Agent (baseline) & 0.280 & 0.118 & --- & --- & --- \\
+Rule-based & 0.240 & 0.101 & +0.017 & 1 & 157.4 \\
+OPF & 0.240 & --- & --- & 1 & 329.5 \\
+DDPG (ours) & 0.240 & 0.090 & +0.028 & 1 & 163.9 \\
+DDPG (no PER) & 0.240 & 0.100 & +0.019 & 1 & 193.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Supervised MLP Cascade Prediction (classification-only)}
+\label{tab:mlp}
+\begin{tabular}{lcccccc}
+\toprule
+Method & Accuracy & Precision & Recall & F1 & AUC & FPR \\
+\midrule
+Supervised MLP & 0.640 & 0.375 & 0.429 & 0.400 & 0.532 & 0.278 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Ablation Study}
+\label{tab:ablation}
+\begin{tabular}{lcccc}
+\toprule
+Variant & Cascade Rate & Load Shed & Shed $\downarrow$ & Prevented \\
+\midrule
+Full model (PER) & 0.240 & 0.100 & +0.019 & 1 \\
+Without weather & 0.680 & 0.294 & -0.176 & 1 \\
+Without PER & 0.240 & 0.100 & +0.019 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Sensitivity to Weather Forecast Degradation}
+\label{tab:sensitivity}
+\begin{tabular}{lcc}
+\toprule
+Forecast RMSE & Cascade Rate & Mean Load Shed \\
+\midrule
+0\% & 0.240 & 0.100 \\
+10\% & 0.240 & 0.105 \\
+20\% & 0.240 & 0.117 \\
+30\% & 0.240 & 0.100 \\
+\bottomrule
+\end{tabular}
+\end{table}

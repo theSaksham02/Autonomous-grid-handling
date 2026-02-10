@@ -1,0 +1,114 @@
+# ============================================================
+# Autonomous Grid Handling — Master Configuration
+# ============================================================
+
+grid:
+  case: "case118"                # pandapower network name
+  n_buses: 118
+  n_lines: 173
+  n_gens: 54
+  base_loading_scale: 1.80       # scale loads to 180% to induce stress for cascades
+  voltage_limits: [0.90, 1.10]   # pu — cascade violation thresholds
+  line_overload_threshold: 1.00  # fraction of rated capacity
+  voltage_normal: [0.95, 1.05]   # pu — normal operating band
+
+renewables:
+  wind_buses: [10, 25, 34, 49, 59, 65, 80, 89, 100, 111]
+  solar_buses: [12, 30, 42, 56, 69, 77, 92, 105]
+  wind_capacity_mw: 80.0         # per-bus installed capacity
+  solar_capacity_mw: 50.0
+  # Weibull parameters for wind speed
+  weibull_shape: 2.0
+  weibull_scale: 8.0
+  # Turbine curve
+  cut_in: 3.5      # m/s
+  rated_speed: 12.0
+  cut_out: 25.0
+
+weather:
+  n_scenarios: 1000
+  n_hours: 24
+  seed: 42
+
+cascade:
+  max_iterations: 15
+  load_shed_eps: 0.01            # MW — negligible load-shed floor
+  severity_thresholds:           # Eq. 5 — σ boundaries
+    sigma_1: 0.20                # <20 % load shed → σ=1 (minor)
+    sigma_2: 0.50                # <50 % → σ=2 (moderate)
+                                  # ≥50 % → σ=3 (severe)
+  target_cascade_rate: [0.25, 0.40]  # desired fraction of cascade-positive
+
+dataset:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
+
+features:
+  # Approximate sizes (exact after extraction)
+  n_voltage: 118
+  n_line_loading: 173
+  n_gen_output: 54
+  n_weather: 24                  # 6 features × 4 look-ahead horizons
+  n_trend: 118                   # voltage moving averages
+  n_time: 2                     # sin/cos hour encoding
+  # total ≈ 502
+
+rl:
+  env_id: "GridCascade-v0"
+  action_dim: 4
+  episode_length: 24
+  gamma: 0.99
+  tau: 0.005                     # soft target update
+  actor_lr: 0.0001
+  critic_lr: 0.001
+  replay_capacity: 100000
+  batch_size: 64
+  ou_theta: 0.15
+  ou_sigma: 0.20
+  ou_sigma_min: 0.05
+  ou_decay: 0.9995
+  n_episodes: 300
+  warmup_steps: 200
+  eval_interval: 25
+  n_seeds: 3                    # for statistical significance
+
+reward:
+  alpha: 1.0                    # voltage-stability weight
+  beta: 2.0                     # cascade-prevention weight
+  lambda_cost: 0.3              # action-cost penalty
+  cascade_penalty: -50.0
+  stability_bonus: 5.0
+
+network:
+  actor_hidden: [256, 128]
+  critic_hidden: [256, 128]
+  activation: "relu"
+
+baselines:
+  rule_based:
+    line_threshold: 0.90
+    voltage_band: [0.95, 1.05]
+    curtail_pct: 0.20
+    demand_reduce_pct: 0.10
+  supervised_mlp:
+    hidden: [256, 128]
+    lr: 0.001
+    epochs: 100
+    batch_size: 64
+  opf:
+    timeout_s: 30
+
+paths:
+  base_case: "data/raw/base_case.pkl"
+  weather_scenarios: "data/raw/weather_scenarios.npz"
+  cascade_results: "data/raw/cascade_results.npz"
+  train_data: "data/processed/train.npz"
+  val_data: "data/processed/val.npz"
+  test_data: "data/processed/test.npz"
+  norm_stats: "data/processed/norm_stats.npz"
+  best_model: "models/trained_weights/best_ddpg.pt"
+  figures_dir: "results/figures"
+  tables_dir: "results/tables"
+  logs_dir: "logs"

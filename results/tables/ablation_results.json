@@ -1,0 +1,20 @@
+{
+  "Full model (PER)": {
+    "cascade_rate": 0.24,
+    "mean_load_shed": 0.09953980051344072,
+    "shed_reduction": 0.018673332844566376,
+    "cascades_prevented": 1
+  },
+  "Without weather": {
+    "cascade_rate": 0.68,
+    "mean_load_shed": 0.29395214057448804,
+    "shed_reduction": -0.17573900721648095,
+    "cascades_prevented": 1
+  },
+  "Without PER": {
+    "cascade_rate": 0.24,
+    "mean_load_shed": 0.09953980051344072,
+    "shed_reduction": 0.018673332844566376,
+    "cascades_prevented": 1
+  }
+}
