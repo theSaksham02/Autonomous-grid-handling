@@ -4,6 +4,8 @@ Short, reproducible study: can a **small learning agent** take **one gentle prev
 
 **Submit this:** EASRP 2026 anonymous pack in [`easrp2026/`](easrp2026/) (`main.tex` + `easrp2026.sty` + `references.bib` + `figures/`). Checklist: [`easrp2026/WHAT_TO_CHECK.txt`](easrp2026/WHAT_TO_CHECK.txt).
 
+**UG 0-to-tech guide (for you):** [`docs/ug_guide/README.md`](docs/ug_guide/README.md) — cascade analogy, folder map, code walkthrough, libraries, viva Q&A, diagrams.
+
 Older IEEE draft (kept for reference): [`paper.tex`](paper.tex)
 
 ## Elevator pitch (say this out loud)
