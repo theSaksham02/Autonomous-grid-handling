@@ -1,0 +1,68 @@
+{
+  "Do nothing": {
+    "prevented": 0,
+    "induced": 0,
+    "cascade_rate": 0.34,
+    "mean_shed": 0.1405181974101045,
+    "shed_drop": 0.0,
+    "mcnemar_p": null,
+    "wilcoxon_p": null
+  },
+  "If-then rule": {
+    "prevented": 11,
+    "induced": 5,
+    "unchanged_cascade": 40,
+    "both_safe": 94,
+    "cascade_rate": 0.3,
+    "mean_shed": 0.12139137521954135,
+    "shed_drop": 0.019126822190563136,
+    "mcnemar_p": 0.210113525390625,
+    "wilcoxon_p": 0.06119131113926183,
+    "wilcoxon_stat": 738.5
+  },
+  "DDPG seed 0": {
+    "prevented": 6,
+    "induced": 2,
+    "unchanged_cascade": 45,
+    "both_safe": 97,
+    "cascade_rate": 0.31333333333333335,
+    "mean_shed": 0.1360341619116416,
+    "shed_drop": 0.004484035498462879,
+    "mcnemar_p": 0.2890625,
+    "wilcoxon_p": 0.2540142898265706,
+    "wilcoxon_stat": 248.0
+  },
+  "DDPG seed 1": {
+    "prevented": 11,
+    "induced": 4,
+    "unchanged_cascade": 40,
+    "both_safe": 95,
+    "cascade_rate": 0.29333333333333333,
+    "mean_shed": 0.11875866512809134,
+    "shed_drop": 0.021759532282013147,
+    "mcnemar_p": 0.11846923828124999,
+    "wilcoxon_p": 0.028149603524773477,
+    "wilcoxon_stat": 631.0
+  },
+  "DDPG no PER": {
+    "prevented": 6,
+    "induced": 2,
+    "unchanged_cascade": 45,
+    "both_safe": 97,
+    "cascade_rate": 0.31333333333333335,
+    "mean_shed": 0.1360341619116416,
+    "shed_drop": 0.004484035498462879,
+    "mcnemar_p": 0.2890625,
+    "wilcoxon_p": 0.2540142898265706,
+    "wilcoxon_stat": 248.0
+  },
+  "OPF": {
+    "prevented": 10,
+    "induced": 7,
+    "cascade_rate": 0.32,
+    "mean_shed": null,
+    "shed_drop": null,
+    "mcnemar_p": null,
+    "wilcoxon_p": null
+  }
+}

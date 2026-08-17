@@ -1,0 +1,51 @@
+% European AI Summer Research Program 2026 — submission style
+% Matches the official template commands: \easrptitle, \easrpauthor,
+% \easrpaffiliation, and the [accepted] package option.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{easrp2026}[2026/08/01 EASRP 2026]
+
+\newif\ifeasrp@accepted
+\easrp@acceptedfalse
+\DeclareOption{accepted}{\easrp@acceptedtrue}
+\ProcessOptions\relax
+
+\RequirePackage[a4paper,margin=2.5cm]{geometry}
+\RequirePackage{times}
+\RequirePackage{natbib}
+\RequirePackage{setspace}
+\RequirePackage{caption}
+\RequirePackage{booktabs}
+\RequirePackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue}
+
+\setstretch{1.08}
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\easrpauthor}[1]{\gdef\easrp@author{#1}}
+\newcommand{\easrpaffiliation}[1]{\gdef\easrp@affil{#1}}
+\newcommand{\easrptitle}[1]{\title{#1}\gdef\easrp@title{#1}}
+\easrpauthor{}
+\easrpaffiliation{}
+
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\LARGE\bfseries \easrp@title\par}
+    \vspace{1.1em}
+    \ifeasrp@accepted
+      {\large \easrp@author\par}
+      \vspace{0.4em}
+      {\normalsize\textit{\easrp@affil}\par}
+    \else
+      {\large\textit{Anonymous submission}\\[0.25em]
+      European AI Summer Research Program 2026\par}
+    \fi
+    \vspace{0.9em}
+    {\footnotesize Up to 8 pages of main text (11pt, A4).
+    References and appendix do not count toward the limit.\par}
+  \end{center}
+  \vspace{0.6em}
+}
+
+\renewcommand{\abstract}{%
+  \noindent\textbf{Abstract.}\enspace\ignorespaces}
+\renewcommand{\endabstract}{\par\vspace{0.9em}}

@@ -1,0 +1,58 @@
+WHAT TO RUN AND CHECK (EASRP 2026)
+=================================
+
+A. Compile the paper (Overleaf — recommended)
+---------------------------------------------
+1. New Project → Upload Project.
+   Upload the folder easrp2026/ as a zip, OR upload:
+     main.tex, easrp2026.sty, references.bib, figures/*.png
+2. Set main.tex as the compiler root.
+3. Compiler: pdfLaTeX (not XeLaTeX).
+4. Click Recompile TWICE (BibTeX needs a second pass).
+   Menu → logs: you should see "Bibliography" with 0 undefined citations.
+5. If the organizers already gave you an official easrp2026.sty,
+   KEEP THEIRS and only replace main.tex + references.bib + figures/.
+
+B. Anonymous check (must pass before submit)
+--------------------------------------------
+[ ] No author name in the PDF (anonymous mode is the default).
+[ ] No university, no "Birmingham", no GitHub username.
+[ ] No "I/we at our lab" identifying phrases.
+[ ] Abstract has no citations (template request).
+[ ] Delete any leftover "Your paper title here" / formatting fbox.
+
+After ACCEPTANCE only:
+  change \usepackage{easrp2026}
+  to     \usepackage[accepted]{easrp2026}
+  Names in \easrpauthor / \easrpaffiliation will then appear.
+
+C. Page-limit check
+-------------------
+[ ] Main text (title through Conclusion) ≤ 8 pages at 11pt A4.
+[ ] References + Appendix do NOT count. Extra tables/figures are in the appendix on purpose.
+
+D. Numbers check (do not invent)
+--------------------------------
+Headline table must match results/tables/all_results_n150.json:
+  do nothing 0.340 / 0.141
+  rule       0.300 / 0.121  saved 11 hurt 5
+  OPF        0.320          saved 10 hurt 7  568 ms
+  DDPG mean  0.303 / 0.127  299 ms
+  DDPG seed1 0.293 / 0.119  saved 11 hurt 4  Wilcoxon p=0.028
+[ ] Do not quote the old 25-scenario 0.28→0.24 table.
+
+E. Optional: regenerate figures
+-------------------------------
+  python scripts/make_paper_figures.py
+  then copy results/figures/fig_*.png into easrp2026/figures/
+
+F. Optional: re-run the experiment (hours on CPU)
+-------------------------------------------------
+  python finish_stage6.py --n-test 150
+  Colab: colab new -s grid-eval --gpu T4
+         (colab sessions is empty until you run colab new)
+
+G. Submit
+---------
+  PDF only, unless they also want the zip.
+  Keep the PDF anonymous.

@@ -1,5 +1,19 @@
 \begin{table}[t]
 \centering
+\caption{Weather-scenario split (seed 42)}
+\label{tab:dataset}
+\begin{tabular}{lccc}
+\toprule
+ & Train & Val & Test \\
+\midrule
+Days & 700 & 150 & 150 \\
+This paper evaluates & --- & --- & 150 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
 \caption{Cascade prevention on the full test set ($n=150$)}
 \label{tab:results}
 \begin{tabular}{lcccc}
@@ -11,6 +25,73 @@ If-then rule & 0.300 & 0.121 & 11  & 293 \\
 OPF          & 0.320 & ---   & 10  & 568 \\
 DDPG (2-seed mean) & 0.303 & 0.127 & 8.5 & 299 \\
 DDPG (no PER) & 0.313 & 0.136 & 6  & 309 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{DDPG seeds on the same 150 days}
+\label{tab:seeds}
+\begin{tabular}{lcccc}
+\toprule
+Variant & Cascade & Load shed & Saved & Hurt \\
+\midrule
+Seed 0 (PER) & 0.313 & 0.136 & 6 & 2 \\
+Seed 1 (PER) & 0.293 & 0.119 & 11 & 4 \\
+No PER       & 0.313 & 0.136 & 6 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Paired comparison versus doing nothing ($n=150$)}
+\label{tab:paired}
+\begin{tabular}{lcccc}
+\toprule
+Method & Saved & Hurt & McNemar $p$ & Shed $p$ \\
+\midrule
+If-then rule & 11 & 5 & 0.21 & 0.061 \\
+DDPG seed 1  & 11 & 4 & 0.12 & 0.028 \\
+DDPG seed 0  & 6  & 2 & 0.29 & 0.25 \\
+DDPG no PER  & 6  & 2 & 0.29 & 0.25 \\
+OPF          & 10 & 7 & ---  & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Do-nothing severity on the test days}
+\label{tab:severity}
+\begin{tabular}{lcc}
+\toprule
+Class & Meaning & Days \\
+\midrule
+0 & No cascade & 99 \\
+1 & Minor shed & 14 \\
+2 & Moderate shed & 18 \\
+3 & Severe shed & 19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Experiment setup (all values in \texttt{config.yaml})}
+\label{tab:setup}
+\begin{tabular}{ll}
+\toprule
+Item & Value \\
+\midrule
+Network & IEEE 118-bus, 180\% loading \\
+Weather days & 1000 (24 h, seed 42) \\
+Agent inputs & 489 numbers \\
+Agent knobs & 4 (storage, reactive, curtail, demand) \\
+Train episodes & 100 $\times$ 8 hours, 2 seeds \\
+Test hour & Hour 12, 150 days \\
+Accident seed & scenario index $+ 1000$ \\
 \bottomrule
 \end{tabular}
 \end{table}

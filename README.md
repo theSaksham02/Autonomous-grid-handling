@@ -2,7 +2,9 @@
 
 Short, reproducible study: can a **small learning agent** take **one gentle preventive action** so a weather-stressed IEEE 118-bus grid cascades less often?
 
-Paper (IEEE conference, under 8 pages, little maths): [`paper.tex`](paper.tex)
+**Submit this:** EASRP 2026 anonymous pack in [`easrp2026/`](easrp2026/) (`main.tex` + `easrp2026.sty` + `references.bib` + `figures/`). Checklist: [`easrp2026/WHAT_TO_CHECK.txt`](easrp2026/WHAT_TO_CHECK.txt).
+
+Older IEEE draft (kept for reference): [`paper.tex`](paper.tex)
 
 ## Elevator pitch (say this out loud)
 
@@ -45,6 +47,23 @@ colab install -s grid-eval -r requirements.txt
 ```
 
 `colab sessions` is empty until you run `colab new`.
+
+## Paper figures and tables
+
+Figures in `results/figures/` (built by `python scripts/make_paper_figures.py`):
+
+| File | What it shows |
+|------|----------------|
+| `fig_pipeline.png` | One test-day scoring loop |
+| `fig_summary_three.png` | Cascade rate, load shed, speed |
+| `fig_severity_none.png` | Do-nothing severity counts |
+| `fig_prevented_induced.png` | Days saved vs days made worse |
+| `fig_shed_box.png` | Per-day load-shed boxplots |
+| `fig_shed_scatter.png` | DDPG seed 1 vs do-nothing, paired |
+| `fig_training.png` | Training reward curves |
+| `fig_main_n150.png` | Earlier two-panel summary |
+
+Tables: `results/tables/latex_tables.tex`, numbers in `all_results_n150.json` and `extra_stats_n150.json`.
 
 ## Layout
 

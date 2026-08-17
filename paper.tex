@@ -27,9 +27,9 @@ cascading failure, reinforcement learning, DDPG, IEEE 118-bus, preventive contro
 
 \section{Introduction}
 
-Power grids fail in a way that is easy to picture. Think of a busy road network. If one motorway lane closes, cars spill onto the next road. If that road is already full, it jams too. In a grid the ``roads'' are transmission lines and the ``cars'' are electrical power. When a line trips, power reroutes. If another line then exceeds its thermal limit, it also trips. That chain is a \emph{cascade}.
+Power grids fail in a way that is easy to picture. Think of a busy road network. If one motorway lane closes, cars spill onto the next road. If that road is already full, it jams too. In a grid the ``roads'' are transmission lines and the ``cars'' are electrical power. When a line trips, power reroutes. If another line then exceeds its thermal limit, it also trips. That chain is a \emph{cascade}~\cite{b1}.
 
-Today most tools still \emph{react} after something has already gone wrong. We study a simpler idea: take a small preventive action while the grid is still intact, then see whether the later cascade is milder. The action has to be explainable. Our agent is only allowed four knobs, each with a tight limit so it cannot ``fix'' the grid by shedding huge amounts of load:
+Today most tools still \emph{react} after something has already gone wrong, including several deep-learning emergency controllers~\cite{b2}. We study a simpler idea: take a small preventive action while the grid is still intact, then see whether the later cascade is milder. The action has to be explainable. Our agent is only allowed four knobs, each with a tight limit so it cannot ``fix'' the grid by shedding huge amounts of load:
 
 \begin{itemize}
 \item charge or discharge a modest storage unit ($\pm$15~MW);
@@ -51,7 +51,7 @@ This is a laboratory prototype on a standard test network, not a live utility de
 The pipeline has four stages, all in the public GitHub repository.
 
 \begin{enumerate}
-\item \textbf{Grid.} Load the IEEE 118-bus case (118 buses, 173 lines, 54 generators) and scale demand to 180\% of the textbook loading so the system is stressed enough that cascades can actually occur.
+\item \textbf{Grid.} Load the IEEE 118-bus case~\cite{b3} (118 buses, 173 lines, 54 generators) in pandapower~\cite{b4} and scale demand to 180\% of the textbook loading so the system is stressed enough that cascades can actually occur.
 \item \textbf{Weather.} Sample 1{,}000 day-long wind and solar traces (seed 42). Wind uses a standard turbine curve; solar follows a day/night pattern with random cloudiness. Ten buses host wind, eight host solar.
 \item \textbf{Learning.} A DDPG agent sees a snapshot of the grid (voltages, line loadings, generator output, a short weather look-ahead, and time of day: 489 numbers) and outputs the four knobs above. During training we do \emph{not} run the expensive cascade. We only reward a healthy-looking grid: voltages near 1.0~pu, lines not packed, and small actions. That keeps training cheap on a laptop.
 \item \textbf{Test.} For each of 150 unseen weather days, at peak hour (hour 12), every method takes at most one action. Then we run a physics cascade: sample an N-1/N-2/N-3 accident with a seed tied to the scenario index, trip those elements, and iterate overloads until the system settles or we hit a 15-step cap. The same accident is replayed for every method.
@@ -69,25 +69,68 @@ After the accident we measure how much customer demand had to be dropped to keep
 
 \textbf{If-then rule.} If any line is above 90\% loading, or any bus voltage leaves the 0.95--1.05~pu band, apply a fixed recipe (partial storage, reactive support, 20\% curtailment, 10\% demand cut). Otherwise sit still. A first-year student can recode this in a few lines.
 
-\textbf{OPF.} Ask pandapower's optimal power flow to redispach generators under thermal and voltage limits, then run the same accident. This is the ``slow but physics-aware'' adult in the room. It is not a learning method.
+\textbf{OPF.} Ask pandapower's optimal power flow~\cite{b4} to redispach generators under thermal and voltage limits, then run the same accident. This is the ``slow but physics-aware'' adult in the room. It is not a learning method.
 
-\textbf{DDPG agent.} Actor--critic networks (489$\rightarrow$256$\rightarrow$128$\rightarrow$4). We train 100 short episodes, two random seeds, with and without prioritized replay. Full settings live in \texttt{config.yaml}. The agent is frozen at test time: one forward pass, one action, then the cascade simulator.
+\textbf{DDPG agent.} Actor--critic networks (489$\rightarrow$256$\rightarrow$128$\rightarrow$4) using Deep Deterministic Policy Gradient~\cite{b5}. We train 100 short episodes, two random seeds, with and without prioritized replay~\cite{b6}. Full settings live in \texttt{config.yaml}. The agent is frozen at test time: one forward pass, one action, then the cascade simulator.
 
 \subsection{Fairness rules}
 
 \begin{itemize}
-\item Train / validation / test split is 700 / 150 / 150, permutation seed 42.
+\item Train / validation / test split is 700 / 150 / 150, permutation seed 42 (Table~\ref{tab:dataset}).
 \item Accident randomness for scenario $i$ uses seed $i+1000$, so method A and method B see the same trips.
 \item We evaluate the \emph{full} test split (150 days), not a convenience subset of 25.
 \end{itemize}
 
-\section{Results}
-
-Table~\ref{tab:main} and Fig.~\ref{fig:main} summarise the 150-day test.
+Table~\ref{tab:setup} lists the knobs a reader needs to rerun the study. Fig.~\ref{fig:pipeline} is the scoring loop for one test day.
 
 \begin{table}[t]
 \centering
-\caption{Full test set ($n=150$). Cascade rate is the fraction of days that still cascade. Load shed is mean dropped demand (fraction). ``Prevented'' counts days that cascaded with no agent but not with the method. Latency is mean wall time per decision, including power flow.}
+\caption{Weather-scenario split (seed 42)}
+\label{tab:dataset}
+\begin{tabular}{lccc}
+\toprule
+ & Train & Val & Test \\
+\midrule
+Days & 700 & 150 & 150 \\
+Scored in this paper & --- & --- & 150 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Experiment setup (all values in \texttt{config.yaml})}
+\label{tab:setup}
+\begin{tabular}{ll}
+\toprule
+Item & Value \\
+\midrule
+Network & IEEE 118-bus, 180\% loading \\
+Weather days & 1000 (24~h, seed 42) \\
+Agent inputs / knobs & 489 numbers / 4 actions \\
+Train episodes & 100 $\times$ 8 hours, 2 seeds \\
+Test hour & Hour 12, 150 days \\
+Accident seed & scenario index $+ 1000$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{results/figures/fig_pipeline.png}
+\caption{One test day: apply weather, allow at most one action, replay a fixed accident, then score cascade and shed. Every method sees the same accident.}
+\label{fig:pipeline}
+\end{figure}
+
+\section{Results}
+
+\subsection{Headline comparison}
+
+Table~\ref{tab:main} and Fig.~\ref{fig:summary} summarise the 150-day test. Doing nothing cascades on 51 of 150 days (34\%). The if-then rule and DDPG both land near 30\%. That is a handful of extra ``saved'' days, not a transformed grid.
+
+\begin{table}[t]
+\centering
+\caption{Full test set ($n=150$). Cascade rate is the fraction of days that still cascade. Load shed is mean dropped demand (fraction). ``Prevented'' counts days that cascaded with no agent but not with the method. Time includes power flow.}
 \label{tab:main}
 \begin{tabular}{lcccc}
 \toprule
@@ -96,27 +139,123 @@ Method & Cascade & Load shed & Prevented & Time (ms) \\
 Do nothing     & 0.340 & 0.141 & --- & --- \\
 If-then rule   & 0.300 & 0.121 & 11  & 293 \\
 OPF            & 0.320 & ---   & 10  & 568 \\
-DDPG (mean of 2 seeds) & 0.303 & 0.127 & 8.5 & 299 \\
+DDPG (2-seed mean) & 0.303 & 0.127 & 8.5 & 299 \\
 DDPG, no extra replay  & 0.313 & 0.136 & 6   & 309 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{results/figures/fig_summary_three.png}
+\caption{Same 150 test days, three views: how often a cascade still happens, how much demand is dropped, and how long a decision takes. DDPG matches a handwritten rule on the first two and beats OPF on speed.}
+\label{fig:summary}
+\end{figure*}
+
+\subsection{How bad are the no-control days?}
+
+Table~\ref{tab:severity} and Fig.~\ref{fig:severity} split the do-nothing outcomes. Most days are fine (99/150). When a cascade does start, it is often moderate or severe (37 days), which is why even a small preventive move is worth measuring.
+
+\begin{table}[t]
+\centering
+\caption{Do-nothing severity on the 150 test days}
+\label{tab:severity}
+\begin{tabular}{lcc}
+\toprule
+Class & Meaning & Days \\
+\midrule
+0 & No cascade & 99 \\
+1 & Minor shed & 14 \\
+2 & Moderate shed & 18 \\
+3 & Severe shed & 19 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{results/figures/fig_main_n150.png}
-\caption{Left: cascade rate on 150 held-out weather days. Right: time per decision. The learning agent is in the same ballpark as a handwritten rule, and clearly faster than OPF.}
-\label{fig:main}
+\includegraphics[width=0.92\columnwidth]{results/figures/fig_severity_none.png}
+\caption{Do-nothing severity counts. The study is not ``all blackouts'': two thirds of test days are already safe.}
+\label{fig:severity}
 \end{figure}
 
-\paragraph{Reading the numbers without hype.}
-Doing nothing cascades on 51 of 150 days (34\%). The if-then rule and DDPG both land near 30\%. That is about 5--6 extra ``saved'' days, not a transformed grid. A paired test on the rule versus do-nothing does not reach $p<0.05$ (McNemar $p\approx0.21$). So we report a \emph{small, consistent direction}, not a breakthrough.
+\subsection{Saved days versus new cascade days}
+
+A method can also \emph{create} a cascade that would not have happened. Table~\ref{tab:paired} and Fig.~\ref{fig:pi} count both. The if-then rule saves 11 days and hurts 5. The better DDPG seed saves 11 and hurts 4. Cascade yes/no is not significant (McNemar $p>0.05$), but seed~1 does cut per-day load shed (Wilcoxon $p=0.028$).
+
+\begin{table}[t]
+\centering
+\caption{Paired comparison versus doing nothing ($n=150$). Shed $p$ is a one-sided Wilcoxon test on per-day load shed.}
+\label{tab:paired}
+\begin{tabular}{lcccc}
+\toprule
+Method & Saved & Hurt & McNemar $p$ & Shed $p$ \\
+\midrule
+If-then rule & 11 & 5 & 0.21 & 0.061 \\
+DDPG seed 1  & 11 & 4 & 0.12 & 0.028 \\
+DDPG seed 0  & 6  & 2 & 0.29 & 0.25 \\
+DDPG no PER  & 6  & 2 & 0.29 & 0.25 \\
+OPF          & 10 & 7 & ---  & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{results/figures/fig_prevented_induced.png}
+\caption{Green: days that cascaded with no control but not with the method. Red: the reverse. Net help is small.}
+\label{fig:pi}
+\end{figure}
+
+\subsection{Load shed, not just yes/no}
+
+Fig.~\ref{fig:shedbox} shows the full distribution of dropped demand. Fig.~\ref{fig:scatter} plots DDPG seed~1 against do-nothing on the same day: points below the diagonal mean the agent shed less. The if-then rule still has the lowest mean shed (0.121). The better DDPG seed is close (0.119).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{results/figures/fig_shed_box.png}
+\caption{Per-day load shed. Boxes hide outliers so the typical day is readable. Means match Table~\ref{tab:main}.}
+\label{fig:shedbox}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\columnwidth]{results/figures/fig_shed_scatter.png}
+\caption{Paired load shed for DDPG seed~1. Below the dashed line the agent dropped less demand than doing nothing.}
+\label{fig:scatter}
+\end{figure}
+
+\subsection{Seeds and training}
+
+Table~\ref{tab:seeds} splits the two DDPG seeds. Seed~1 is the useful run; seed~0 looks like the no-PER agent. Fig.~\ref{fig:train} shows the proxy training reward (healthy voltages and lines, not the cascade itself). Reward flattens within about 40 episodes.
+
+\begin{table}[t]
+\centering
+\caption{DDPG seeds on the same 150 days}
+\label{tab:seeds}
+\begin{tabular}{lcccc}
+\toprule
+Variant & Cascade & Load shed & Saved & Hurt \\
+\midrule
+Seed 0 (PER) & 0.313 & 0.136 & 6 & 2 \\
+Seed 1 (PER) & 0.293 & 0.119 & 11 & 4 \\
+No PER       & 0.313 & 0.136 & 6 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{results/figures/fig_training.png}
+\caption{Training reward (proxy). Faint lines are raw episodes; bold lines are a short moving average.}
+\label{fig:train}
+\end{figure}
 
 \paragraph{Speed is the clean win versus OPF.}
 OPF still helps a little (32\% cascade) but takes 568~ms on average. DDPG takes 299~ms---about $1.9\times$ faster---because a trained network does not re-solve an optimisation from scratch.
 
 \paragraph{Rules are competitive.}
-On this conservative action box, the handwritten rule slightly beats the mean DDPG seed on load shed (0.121 vs.\ 0.127). The better DDPG seed reached 29.3\% cascade and 0.119 shed (11 days prevented). A fair takeaway for a CS audience: \emph{if the knobs are this small, a good rule is a strong baseline, and learning is not automatically better}. That is a result, not a failure.
+If the knobs stay this small, a good handwritten rule is a strong baseline, and learning is not automatically better. That is a result, not a failure.
 
 \section{How to Reproduce}
 
@@ -140,13 +279,13 @@ The action limits are intentionally tiny, so no method can perform miracles. The
 
 We asked whether a small, explainable learning agent can take one preventive step against weather-stressed cascades on IEEE 118-bus. Relative to doing nothing, both a simple rule and DDPG reduce cascade frequency from 34\% to about 30\% on 150 test days, and DDPG answers nearly twice as fast as OPF. The scientific value is a \emph{reproducible comparison}, not an inflated accuracy number. Future student work can widen the action box, lengthen the test set, or add a second corrective step after the first trip.
 
-\begin{thebibliography}{8}
-\bibitem{b1} I. Dobson, B. A. Carreras, V. E. Lynch, and D. E. Newman, ``Complex systems analysis of series of blackouts,'' \textit{Chaos}, vol.~17, no.~2, 2007.
-\bibitem{b2} L. Thurner \textit{et al.}, ``pandapower---An open-source Python tool for convenient modeling of electric power systems,'' \textit{IEEE Trans. Power Syst.}, vol.~33, no.~6, pp.~6510--6521, 2018.
-\bibitem{b3} T. P. Lillicrap \textit{et al.}, ``Continuous control with deep reinforcement learning,'' in \textit{Proc. ICLR}, 2016.
-\bibitem{b4} T. Schaul, J. Quan, I. Antonoglou, and D. Silver, ``Prioritized experience replay,'' in \textit{Proc. ICLR}, 2016.
-\bibitem{b5} Q. Huang \textit{et al.}, ``Adaptive power system emergency control using deep reinforcement learning,'' \textit{IEEE Trans. Smart Grid}, vol.~11, no.~2, pp.~1171--1182, 2020.
-\bibitem{b6} IEEE 118-bus test case, Univ. of Washington. [Online]. Available: \url{https://labs.ece.uw.edu/pstca/pf118/pg_tca118bus.htm}
+\begin{thebibliography}{6}
+\bibitem{b1} I. Dobson, B. A. Carreras, V. E. Lynch, and D. E. Newman, ``Complex systems analysis of series of blackouts: Cascading failure, critical points, and self-organization,'' \textit{Chaos}, vol.~17, no.~2, 2007.
+\bibitem{b2} Q. Huang \textit{et al.}, ``Adaptive power system emergency control using deep reinforcement learning,'' \textit{IEEE Trans. Smart Grid}, vol.~11, no.~2, pp.~1171--1182, 2020.
+\bibitem{b3} IEEE 118-bus test case, Univ. of Washington. [Online]. Available: \url{https://labs.ece.uw.edu/pstca/pf118/pg_tca118bus.htm}
+\bibitem{b4} L. Thurner \textit{et al.}, ``pandapower---An open-source Python tool for convenient modeling of electric power systems,'' \textit{IEEE Trans. Power Syst.}, vol.~33, no.~6, pp.~6510--6521, 2018.
+\bibitem{b5} T. P. Lillicrap \textit{et al.}, ``Continuous control with deep reinforcement learning,'' in \textit{Proc. ICLR}, 2016.
+\bibitem{b6} T. Schaul, J. Quan, I. Antonoglou, and D. Silver, ``Prioritized experience replay,'' in \textit{Proc. ICLR}, 2016.
 \end{thebibliography}
 
 \end{document}
