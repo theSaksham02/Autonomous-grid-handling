@@ -10,8 +10,8 @@
 % After acceptance, switch to:
 % \usepackage[accepted]{easrp2026}
 
-\easrpauthor{Saksham Mishra}
-\easrpaffiliation{Department of Computer Science, University of Birmingham Dubai, UAE}
+\easrpauthor{Anonymous}
+\easrpaffiliation{Anonymous Institution}
 
 \easrptitle{One Gentle Move Before the Blackout:\\
 Measuring Whether a Small Agent Beats a Simple Rule}
@@ -40,9 +40,9 @@ If one motorway lane closes, cars spill onto the next road.
 If that road is already full, it jams too.
 In a grid the ``roads'' are transmission lines and the ``cars'' are electrical power.
 When a line trips, power reroutes; if another line then exceeds its thermal limit, it also trips.
-That chain is a cascade \citep{dobson2007chaos,carreras2002critical}.
+That chain is a cascade \citep{dobson2007chaos,carreras2002critical,pourbeik2006anatomy}.
 
-Most operational tools, and much of the recent learning literature, still \emph{react} after something has already gone wrong \citep{huang2020adaptive}.
+Most operational tools, and much of the recent learning literature, still \emph{react} after something has already gone wrong \citep{huang2020adaptive,lan2020ai}.
 We ask a simpler question that can be stated without a page of equations:
 if we let a small learning agent make \emph{one} gentle move \emph{before} the accident, does the later cascade happen less often?
 
@@ -71,24 +71,26 @@ In technology-readiness language it is a working closed-loop simulation, not a f
 
 \paragraph{Cascades as chain reactions.}
 Physics-based cascade models treat blackouts as sequential overloads rather than a single fault \citep{dobson2007chaos,carreras2002critical}.
+Bienstock~\citep{bienstock2016cascades} formalises the combinatorial structure of these cascades, while Pourbeik et~al.~\citep{pourbeik2006anatomy} dissect real-world blackouts.
 We keep that picture, implemented as a short AC power-flow loop, because it is reproducible on a laptop.
 We do not claim a new dynamic simulator.
 
 \paragraph{Optimal power flow as the classical adult.}
-Security-constrained and AC optimal power flow remain the default preventive tools in operations research on grids \citep{capitanescu2016opf}.
+Security-constrained and AC optimal power flow remain the default preventive tools in operations research on grids \citep{capitanescu2016opf,frank2012introduction}.
 They are principled and slow to re-solve from scratch.
-We use pandapower's OPF \citep{thurner2018pandapower} as that baseline, not as a straw man.
+We use pandapower's OPF \citep{thurner2018pandapower,capitanescu2016opf} as that baseline, not as a straw man; MATPOWER \citep{zimmerman2011matpower} is the other widely used open-source alternative.
 
 \paragraph{Learning, usually after the fault.}
-Deep RL has been applied to emergency load shedding and voltage control \citep{huang2020adaptive,duan2020voltage} and to sequential grid operation in the L2RPN setting \citep{yoon2021l2rpn}.
+Deep RL has been applied to emergency load shedding and voltage control \citep{huang2020adaptive,duan2020voltage,lan2020ai}, to sequential grid operation in the L2RPN competition \citep{yoon2021l2rpn,marot2021l2rpn}, and to economic dispatch \citep{zhang2020dispatch,glavic2017reinforcement}.
+Hossain et~al.~\citep{hossain2021survey} survey the broader DRL-for-smart-grid landscape, and Wang et al.~\citep{wang2020review} provide a comprehensive overview of RL in power systems.
 Those lines of work typically allow many actions \emph{during} unfolding events, often including topology changes.
 Our setting is stricter and smaller: one preventive action, four bounded knobs, then a frozen accident.
 That is closer to ``can a tiny policy help at all?'' than to ``win the control competition.''
 
 \paragraph{Why a negative-leaning comparison is the point.}
-Deep RL results are sensitive to seeds and evaluation protocol \citep{henderson2018deep}.
+Deep RL results are sensitive to seeds and evaluation protocol \citep{henderson2018deep,islam2017reproducibility}.
 A paper that only reports an agent beating ``do nothing'' on 25 days is easy to over-read.
-We therefore report two seeds, a paired accident design, and a rule that a first-year student can recode.
+We therefore report two seeds, a paired accident design, and a rule that a first-year student can recode, following the spirit of recent reproducibility guidelines \citep{pineau2021checklist}.
 If the agent cannot beat that rule, that is a finding.
 
 \section{Method}
@@ -121,6 +123,7 @@ We also record mean dropped demand (``load shed'') across the 150 test days.
 \textbf{OPF.} Redispatch generators under thermal and voltage limits \citep{thurner2018pandapower,capitanescu2016opf}, then run the same accident.
 
 \textbf{DDPG.} A small actor--critic (489 inputs $\rightarrow$ 256 $\rightarrow$ 128 $\rightarrow$ 4 knobs) trained with DDPG \citep{lillicrap2016ddpg}, with and without prioritized replay \citep{schaul2016per}.
+We chose DDPG over newer continuous-control methods such as TD3 \citep{fujimoto2018td3} and SAC \citep{haarnoja2018sac} to keep the agent minimal; a richer algorithm comparison is future work.
 Training uses a cheap \emph{proxy} reward (healthy voltages and lines, small actions).
 The expensive cascade is used only at test time.
 We train 100 short episodes and two seeds.
@@ -219,7 +222,7 @@ If the knobs stay this small, a good handwritten rule is a strong baseline.
 \section{Discussion}
 
 The novel object here is not a new neural layer.
-It is a \emph{fair, small, explainable} test that a reviewer can actually rerun.
+It is a \emph{fair, small, explainable} test that a reviewer can actually rerun, consistent with the reproducibility standards advocated by \citet{pineau2021checklist}.
 Three implications follow.
 
 First, \textbf{action scale dominates algorithm}.
@@ -243,6 +246,14 @@ We did not claim live-grid readiness.
 
 \paragraph{Future work.}
 Widen the action box; evaluate all 150 days with more seeds; add a second corrective step after the first trip; replace the proxy reward with occasional cascade rollouts.
+
+\section{Ethics and Broader Impact}
+
+This study uses only a public IEEE test case and synthetic weather data; no real utility or customer data are involved, and there are no privacy concerns.
+Preventing cascading blackouts has clear societal benefit: outages disproportionately affect hospitals, transit, and low-income households \citep{pourbeik2006anatomy}.
+However, we caution against unsupervised deployment of autonomous agents in critical infrastructure; a human operator should always have override authority.
+Demand-response actions, even at the modest 15\% level studied here, could raise energy-justice concerns if curtailment is not distributed equitably \citep{siano2014demand}.
+We therefore view this work as a laboratory benchmark, not as a recommendation for unattended grid control.
 
 \section{Conclusion}
 
