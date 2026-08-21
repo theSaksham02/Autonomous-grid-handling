@@ -174,14 +174,19 @@ class DDPGAgent:
         self.warmup = cfg["rl"]["warmup_steps"]
         self.use_per = use_per
 
+        # Automatic GPU / CPU selection
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
 
         # Networks
         h = cfg["network"]["actor_hidden"]
-        self.actor = Actor(obs_dim, act_dim, h)
-        self.actor_target = copy.deepcopy(self.actor)
-        self.critic = Critic(obs_dim, act_dim, cfg["network"]["critic_hidden"])
-        self.critic_target = copy.deepcopy(self.critic)
+        self.actor = Actor(obs_dim, act_dim, h).to(self.device)
+        self.actor_target = copy.deepcopy(self.actor).to(self.device)
+        self.critic = Critic(obs_dim, act_dim, cfg["network"]["critic_hidden"]).to(self.device)
+        self.critic_target = copy.deepcopy(self.critic).to(self.device)
 
         self.actor_opt = optim.Adam(self.actor.parameters(), lr=cfg["rl"]["actor_lr"])
         self.critic_opt = optim.Adam(self.critic.parameters(), lr=cfg["rl"]["critic_lr"])
@@ -208,8 +213,8 @@ class DDPGAgent:
     # ── action selection ─────────────────────────────────────────────────
     @torch.no_grad()
     def select_action(self, obs, add_noise=True):
-        s = torch.FloatTensor(obs).unsqueeze(0)
-        a = self.actor(s).squeeze(0).numpy()
+        s = torch.FloatTensor(obs).unsqueeze(0).to(self.device)
+        a = self.actor(s).squeeze(0).cpu().numpy()
         if add_noise:
             a = a + self.noise.sample()
         # Clip to valid action range
@@ -224,12 +229,13 @@ class DDPGAgent:
 
         if self.use_per:
             batch, weights, idx = self.buffer.sample(self.batch_size)
+            weights = weights.to(self.device)
         else:
             batch = self.buffer.sample(self.batch_size)
-            weights = torch.ones(self.batch_size, 1)
+            weights = torch.ones(self.batch_size, 1).to(self.device)
             idx = None
 
-        s, a, r, s2, d = batch
+        s, a, r, s2, d = [t.to(self.device) for t in batch]
 
         # ── Critic update (Eq. 10-11) ────────────────────────────────────
         with torch.no_grad():
@@ -260,7 +266,7 @@ class DDPGAgent:
 
         # PER priority update
         if self.use_per and idx is not None:
-            self.buffer.update_priorities(idx, td_error.detach().squeeze().numpy())
+            self.buffer.update_priorities(idx, td_error.detach().cpu().squeeze().numpy())
 
         return float(critic_loss), float(actor_loss)
 
@@ -276,7 +282,7 @@ class DDPGAgent:
         }, path)
 
     def load(self, path):
-        ckpt = torch.load(path, map_location="cpu")
+        ckpt = torch.load(path, map_location=self.device)
         self.actor.load_state_dict(ckpt["actor"])
         self.critic.load_state_dict(ckpt["critic"])
         self.actor_target.load_state_dict(ckpt["actor_target"])
