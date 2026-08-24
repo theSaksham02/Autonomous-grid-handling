@@ -179,9 +179,12 @@ def main():
               f"prevented={prevented_opf}")
         per_scenario["opf_preds"] = opf_preds
 
-    # ── 4. DDPG-PER (load saved models) ───────────────────────────────
-    n_seeds = 2
+    # ── 4. DDPG-PER (load all available saved seed models) ────────────
+    import glob
+    seed_files = sorted(glob.glob("models/trained_weights/best_ddpg_ddpg_per_seed*.pt"))
+    n_seeds = len(seed_files) if seed_files else 2
     seed_results = []
+    print(f"\nFound {n_seeds} DDPG-PER seed model checkpoints to evaluate.")
 
     for seed in range(n_seeds):
         print(f"\n[eval] Loading DDPG-PER seed={seed} …")
