@@ -126,7 +126,7 @@ We also record mean dropped demand (``load shed'') across the 150 test days.
 We chose DDPG over newer continuous-control methods such as TD3 \citep{fujimoto2018td3} and SAC \citep{haarnoja2018sac} to keep the agent minimal; a richer algorithm comparison is future work.
 Training uses a cheap \emph{proxy} reward (healthy voltages and lines, small actions).
 The expensive cascade is used only at test time.
-We train 100 short episodes and two seeds.
+We train 300 episodes per seed and two seeds.
 At test time the agent is frozen: one forward pass, one action, then the cascade.
 
 \subsection{Fairness rules}
@@ -280,7 +280,7 @@ Item & Value \\
 Network & IEEE 118-bus, 180\% loading \\
 Weather days & 1000 (24~h, seed 42) \\
 Agent inputs / knobs & 489 numbers / 4 actions \\
-Train episodes & 100 $\times$ 8 hours, 2 seeds \\
+Train episodes & 300 $\times$ 8 hours, 2 seeds \\
 Test hour & Hour 12, 150 days \\
 Accident seed & scenario index $+ 1000$ \\
 \bottomrule
